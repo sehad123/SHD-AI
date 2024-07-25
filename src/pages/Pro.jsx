@@ -40,7 +40,7 @@ function Pro() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setOutput("Generating...");
-    window.scrollTo(0, 0); // Scroll to the top of the page
+    window.scrollTo(0, -50); // Scroll ke atas 100 piksel
 
     try {
       let fileContent = "";

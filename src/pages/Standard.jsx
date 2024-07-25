@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import MarkdownIt from "markdown-it";
 import { GoogleGenerativeAI, HarmBlockThreshold, HarmCategory } from "@google/generative-ai";
@@ -12,20 +12,10 @@ function Standard() {
   const [history, setHistory] = useState([]);
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [historyVisible, setHistoryVisible] = useState(false);
+  const [chat, setChat] = useState(null);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setOutput("Generating...");
-    window.scrollTo(0, 0);
-
-    try {
-      const contents = [
-        {
-          role: "user",
-          parts: [{ text: prompt }],
-        },
-      ];
-
+  useEffect(() => {
+    const initializeChat = async () => {
       const genAI = new GoogleGenerativeAI(API_KEY);
       const model = genAI.getGenerativeModel({
         model: "gemini-1.5-flash",
@@ -49,9 +39,29 @@ function Standard() {
         ],
       });
 
+      const newChat = model.startChat({
+        history: [],
+        generationConfig: {
+          maxOutputTokens: 100,
+        },
+      });
+
+      setChat(newChat);
+    };
+
+    initializeChat();
+  }, []);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setOutput("Generating...");
+    window.scrollTo(0, 0);
+
+    try {
+      const promptValue = prompt;
       setPrompt("");
 
-      const result = await model.generateContentStream({ contents });
+      const result = await chat.sendMessageStream(promptValue);
 
       const buffer = [];
       const md = new MarkdownIt();
@@ -62,7 +72,7 @@ function Standard() {
 
       const historyItem = {
         id: history.length,
-        prompt,
+        prompt: promptValue,
         output: buffer.join(""),
       };
 
@@ -97,7 +107,7 @@ function Standard() {
       link: "/",
     },
     {
-      name: "Versi pro",
+      name: "Versi Pro",
       link: "/pro",
     },
   ];
