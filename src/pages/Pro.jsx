@@ -155,17 +155,19 @@ function Pro() {
         </div>
         <div className="chat-container">
           <div className="header">
-            <div className="title-container" onClick={toggleDropdown}>
+            <div className="title-container -translate-y-8 lg:translate-y-0" onClick={toggleDropdown}>
               <h1 className="title">SHD.AI</h1>
               <span className="dropdown-icon">▼</span>
             </div>
-            <button className="dark-mode-button" onClick={handleToggleDarkMode}>
+            <button className="dark-mode-button -translate-y-8 lg:translate-y-0" onClick={handleToggleDarkMode}>
               {darkMode ? "☀️" : "🌙"}
             </button>
             {dropdownVisible && (
               <ul className="dropdown-menu">
                 <li>
-                  <Link onClick={handleShopsyClick}>Version Standard</Link>
+                  <Link to="/" onClick={handleShopsyClick}>
+                    Version Standard
+                  </Link>
                 </li>
                 <li>
                   <Link to="#">Versi Pro</Link>
@@ -173,7 +175,7 @@ function Pro() {
               </ul>
             )}
           </div>
-          <div className="output-container">
+          <div className="output-container -mt-10 lg:mt-0">
             {output && <div className="output" dangerouslySetInnerHTML={{ __html: output }}></div>}
             {output && (
               <button id="copy-button" className="copy-button" onClick={handleCopy}>

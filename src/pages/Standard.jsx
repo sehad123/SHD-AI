@@ -104,7 +104,7 @@ function Pro() {
         </div>
         <div className="chat-container">
           <div className="header">
-            <div className="title-container" onClick={toggleDropdown}>
+            <div className="title-container -translate-y-8 lg:translate-y-0" onClick={toggleDropdown}>
               <h1 className="title">SHD.AI</h1>
               <span className="dropdown-icon">▼</span>
             </div>
@@ -116,14 +116,14 @@ function Pro() {
                   </Link>
                 </li>
                 <li className="cursor-pointer p-2" onClick={handleShopsyClick}>
-                  <Link to="#" className="block w-full h-full">
+                  <Link to="/pro" className="block w-full h-full">
                     Versi Pro
                   </Link>
                 </li>
               </ul>
             )}
           </div>
-          <div className="output-container">
+          <div className="output-container -mt-10 lg:mt-0">
             {output && <div className="output" dangerouslySetInnerHTML={{ __html: output }}></div>}
             {output && (
               <button id="copy-button" className="copy-button" onClick={handleCopy}>
