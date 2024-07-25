@@ -89,6 +89,17 @@ function Pro() {
     setDropdownVisible(!dropdownVisible);
   };
 
+  const Menu1 = [
+    {
+      name: "Versi Standard",
+      link: "/",
+    },
+    {
+      name: "Versi pro",
+      link: "/pro",
+    },
+  ];
+
   return (
     <div>
       <div className="main-container">
@@ -110,21 +121,18 @@ function Pro() {
             </div>
             {dropdownVisible && (
               <ul className="dropdown-menu">
-                <li className="cursor-pointer p-2">
-                  <Link to="#" className="block w-full h-full">
-                    Versi Standard
-                  </Link>
-                </li>
-                <li className="cursor-pointer p-2" onClick={handleShopsyClick}>
-                  <Link to="/pro" className="block w-full h-full">
-                    Versi Pro
-                  </Link>
-                </li>
+                {Menu1.map((menuItem, index) => (
+                  <li key={index} className="cursor-pointer p-2">
+                    <Link to={menuItem.link} className="block w-full h-full">
+                      {menuItem.name}
+                    </Link>
+                  </li>
+                ))}
               </ul>
             )}
           </div>
-          <div className="output-container -mt-10 lg:mt-0">
-            {output && <div className="output" dangerouslySetInnerHTML={{ __html: output }}></div>}
+          <div className="output-container -mt-10 lg:mt-0 h-">
+            {output && <div className="output " dangerouslySetInnerHTML={{ __html: output }}></div>}
             {output && (
               <button id="copy-button" className="copy-button" onClick={handleCopy}>
                 🧾

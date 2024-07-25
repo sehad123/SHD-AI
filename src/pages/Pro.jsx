@@ -139,7 +139,16 @@ function Pro() {
   const toggleDropdown = () => {
     setDropdownVisible(!dropdownVisible);
   };
-
+  const Menu1 = [
+    {
+      name: "Versi Standard",
+      link: "/",
+    },
+    {
+      name: "Versi pro",
+      link: "/pro",
+    },
+  ];
   return (
     <div className={darkMode ? "dark-mode" : ""}>
       <div className="main-container">
@@ -164,14 +173,13 @@ function Pro() {
             </button>
             {dropdownVisible && (
               <ul className="dropdown-menu">
-                <li>
-                  <Link to="/" onClick={handleShopsyClick}>
-                    Version Standard
-                  </Link>
-                </li>
-                <li>
-                  <Link to="#">Versi Pro</Link>
-                </li>
+                {Menu1.map((menuItem, index) => (
+                  <li key={index} className="cursor-pointer p-2">
+                    <Link to={menuItem.link} className="block w-full h-full">
+                      {menuItem.name}
+                    </Link>
+                  </li>
+                ))}
               </ul>
             )}
           </div>
