@@ -17,10 +17,6 @@ function Pro() {
   const [darkMode, setDarkMode] = useState(true); // Set dark mode by default
   const [dropdownVisible, setDropdownVisible] = useState(false); // Dropdown visibility state
 
-  const handleShopsyClick = () => {
-    window.location.href = "/"; // Ganti "/home" dengan URL beranda Anda
-  };
-
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
     if (selectedFile && selectedFile.type.startsWith("image/")) {
@@ -183,7 +179,7 @@ function Pro() {
               </ul>
             )}
           </div>
-          <div className="output-container -mt-10 lg:mt-0">
+          <div className="output-container -mt-10 lg:mt-0 hidden lg:flex md:flex">
             {output && <div className="output" dangerouslySetInnerHTML={{ __html: output }}></div>}
             {output && (
               <button id="copy-button" className="copy-button" onClick={handleCopy}>
@@ -193,7 +189,7 @@ function Pro() {
           </div>
           {imagePreview && <img src={imagePreview} alt="Preview" className="image-preview" />}
           {filePreview && !imagePreview && <div className="file-preview">{filePreview}</div>}
-          <form onSubmit={handleSubmit} className="form">
+          <form onSubmit={handleSubmit} className="form mb-16 lg:mb-0 md:mb-0">
             <div className="prompt-box">
               <label className="upload-icon">
                 <input type="file" id="file-upload" onChange={handleFileChange} />

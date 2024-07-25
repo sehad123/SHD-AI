@@ -1,5 +1,4 @@
 import { useState } from "react";
-import React from "react";
 import { Link } from "react-router-dom";
 import MarkdownIt from "markdown-it";
 import { GoogleGenerativeAI, HarmBlockThreshold, HarmCategory } from "@google/generative-ai";
@@ -7,15 +6,11 @@ import "../App.css";
 
 const API_KEY = "AIzaSyCLTOiwEHTJpl_SScdmP2ZckCNX5Ci2TAQ";
 
-function Pro() {
+function Standard() {
   const [prompt, setPrompt] = useState("");
   const [output, setOutput] = useState("");
   const [history, setHistory] = useState([]);
   const [dropdownVisible, setDropdownVisible] = useState(false); // Dropdown visibility state
-
-  const handleShopsyClick = () => {
-    window.location.href = "/pro"; // Ganti "/home" dengan URL beranda Anda
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -104,7 +99,7 @@ function Pro() {
     <div>
       <div className="main-container">
         <div className="history-container">
-          <h2 className="history-title">History</h2>
+          <h2 className="history-title text-center">History</h2>
           <ul className="history-list">
             {history.map((item) => (
               <li key={item.id} className="history-item" onClick={() => handleHistoryClick(item)}>
@@ -131,15 +126,15 @@ function Pro() {
               </ul>
             )}
           </div>
-          <div className="output-container -mt-10 lg:mt-0 h-">
-            {output && <div className="output " dangerouslySetInnerHTML={{ __html: output }}></div>}
+          <div className="output-container -mt-10 lg:mt-0 hidden lg:flex md:flex">
+            {output && <div className="output" dangerouslySetInnerHTML={{ __html: output }}></div>}
             {output && (
               <button id="copy-button" className="copy-button" onClick={handleCopy}>
                 🧾
               </button>
             )}
           </div>
-          <form onSubmit={handleSubmit} className="form">
+          <form onSubmit={handleSubmit} className="form mb-16 lg:mb-0 md:mb-0">
             <div className="prompt-box">
               <input name="prompt" className="prompt-input" placeholder="Masukkan Perintah anda" type="text" value={prompt} onChange={(e) => setPrompt(e.target.value)} />
               <button type="submit" className="submit-button">
@@ -153,4 +148,4 @@ function Pro() {
   );
 }
 
-export default Pro;
+export default Standard;
