@@ -98,6 +98,33 @@ body {
   position: relative;
 }
 
+.history-container.full-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1000; /* Pastikan berada di atas elemen lainnya */
+  background-color: rgba(245, 245, 245, 0.95); /* Warna latar belakang dengan sedikit transparansi */
+  overflow-y: auto;
+  padding: 24px;
+}
+
+.close-icon {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  font-size: 1.5em;
+  cursor: pointer;
+  z-index: 1001;
+}
+
+@media only screen and (min-width: 768px) {
+  .close-icon {
+    display: none; /* Hide close icon on larger screens */
+  }
+}
+
 .prompt-box {
   display: flex;
   align-items: center;
@@ -140,7 +167,7 @@ body {
 
 .copy-button {
   position: absolute;
-  top: 8px;
+  bottom: 8px;
   right: 8px;
   background: none;
   border: none;

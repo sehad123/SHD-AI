@@ -74,6 +74,7 @@ function Standard() {
 
   const handleHistoryClick = (item) => {
     setOutput(item.output);
+    setHistoryVisible(false); // Menyembunyikan history container pada tampilan mobile
   };
 
   const handleCopy = () => {
@@ -109,7 +110,11 @@ function Standard() {
           📑
         </div>
         {/* History container */}
-        <div className={`history-container ${historyVisible ? "block" : "hidden"} lg:block md:block`}>
+        <div className={`history-container ${historyVisible ? "full-screen" : ""} ${historyVisible ? "block" : "hidden"} lg:block md:block`}>
+          {/* Icon close untuk tampilan mobile */}
+          <div className="close-icon lg:hidden md:hidden" onClick={toggleHistory}>
+            ❌
+          </div>
           <h2 className="history-title text-center">History</h2>
           <ul className="history-list">
             {history.map((item) => (
@@ -126,7 +131,7 @@ function Standard() {
               <span className="dropdown-icon">▼</span>
             </div>
             {dropdownVisible && (
-              <ul className="dropdown-menu ml-24 lg:ml-0 md:ml-0">
+              <ul className="dropdown-menu ml-24 lg:mt-3 lg:ml-0 md:ml-0">
                 {Menu1.map((menuItem, index) => (
                   <li key={index} className="cursor-pointer p-2">
                     <Link to={menuItem.link} className="block w-full h-full">

@@ -122,6 +122,7 @@ function Pro() {
 
   const handleHistoryClick = (item) => {
     setOutput(item.output);
+    setHistoryVisible(false); // Hide history container on mobile view
   };
 
   const handleCopy = () => {
@@ -160,7 +161,10 @@ function Pro() {
           📑
         </div>
         {/* History container */}
-        <div className={`history-container ${historyVisible ? "block" : "hidden"} lg:block md:block`}>
+        <div className={`history-container ${historyVisible ? "full-screen" : ""} ${historyVisible ? "block" : "hidden"} lg:block md:block`}>
+          <div className="close-icon lg:hidden md:hidden" onClick={toggleHistory}>
+            ❌
+          </div>
           <h2 className="history-title text-center">History</h2>
           <ul className="history-list">
             {history.map((item) => (
