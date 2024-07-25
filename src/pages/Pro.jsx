@@ -16,6 +16,7 @@ function Pro() {
   const [history, setHistory] = useState([]);
   const [darkMode, setDarkMode] = useState(true); // Set dark mode by default
   const [dropdownVisible, setDropdownVisible] = useState(false); // Dropdown visibility state
+  const [historyVisible, setHistoryVisible] = useState(false); // History visibility state
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
@@ -39,6 +40,7 @@ function Pro() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setOutput("Generating...");
+    window.scrollTo(0, 0); // Scroll to the top of the page
 
     try {
       let fileContent = "";
@@ -135,6 +137,11 @@ function Pro() {
   const toggleDropdown = () => {
     setDropdownVisible(!dropdownVisible);
   };
+
+  const toggleHistory = () => {
+    setHistoryVisible(!historyVisible);
+  };
+
   const Menu1 = [
     {
       name: "Versi Standard",
@@ -145,10 +152,15 @@ function Pro() {
       link: "/pro",
     },
   ];
+
   return (
     <div className={darkMode ? "dark-mode" : ""}>
       <div className="main-container">
-        <div className="history-container">
+        <div className="history-icon flex lg:hidden md:hidden ml-2 -mt-2" onClick={toggleHistory}>
+          📑
+        </div>
+        {/* History container */}
+        <div className={`history-container ${historyVisible ? "block" : "hidden"} lg:block md:block`}>
           <h2 className="history-title text-center">History</h2>
           <ul className="history-list">
             {history.map((item) => (
@@ -160,7 +172,7 @@ function Pro() {
         </div>
         <div className="chat-container">
           <div className="header">
-            <div className="title-container -translate-y-8 lg:translate-y-0" onClick={toggleDropdown}>
+            <div className="title-container -translate-y-8 lg:translate-y-0 mx-auto lg:mx-0 md:mx-0" onClick={toggleDropdown}>
               <h1 className="title">SHD.AI</h1>
               <span className="dropdown-icon">▼</span>
             </div>
@@ -168,7 +180,7 @@ function Pro() {
               {darkMode ? "☀️" : "🌙"}
             </button>
             {dropdownVisible && (
-              <ul className="dropdown-menu">
+              <ul className="dropdown-menu ml-24 lg:ml-0 md:ml-0">
                 {Menu1.map((menuItem, index) => (
                   <li key={index} className="cursor-pointer p-2">
                     <Link to={menuItem.link} className="block w-full h-full">
@@ -179,7 +191,7 @@ function Pro() {
               </ul>
             )}
           </div>
-          <div className="output-container -mt-10 lg:mt-0 hidden lg:flex md:flex">
+          <div className="output-container -mt-10 lg:mt-0 border border-white lg:border-gray-200 md:border-gray-200 dark:border-none dark:lg:border-gray-200 dark:md:border-gray-200">
             {output && <div className="output" dangerouslySetInnerHTML={{ __html: output }}></div>}
             {output && (
               <button id="copy-button" className="copy-button" onClick={handleCopy}>
