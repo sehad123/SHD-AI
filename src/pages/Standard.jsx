@@ -6,7 +6,6 @@ import { FaRegThumbsUp, FaThumbsUp, FaCopy, FaCheck } from "react-icons/fa";
 import "../App.css";
 
 const API_KEY = "AIzaSyCLTOiwEHTJpl_SScdmP2ZckCNX5Ci2TAQ";
-
 function Standard() {
   const [prompt, setPrompt] = useState("");
   const [output, setOutput] = useState("");
@@ -17,6 +16,7 @@ function Standard() {
   const [isLiked, setIsLiked] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [showInitialMessage, setShowInitialMessage] = useState(true);
 
   useEffect(() => {
     const initializeChat = async () => {
@@ -57,17 +57,18 @@ function Standard() {
   }, []);
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault(); // Prevent the default form submission
     setOutput("Generating...");
     setIsGenerating(true);
     setIsLiked(false);
+    setShowInitialMessage(false); // Hide the initial message
     window.scrollTo(0, 0);
 
     try {
-      const promptValue = prompt;
+      const value = prompt;
       setPrompt("");
 
-      const result = await chat.sendMessageStream(promptValue);
+      const result = await chat.sendMessageStream(value);
 
       const buffer = [];
       const md = new MarkdownIt();
@@ -78,7 +79,7 @@ function Standard() {
 
       const historyItem = {
         id: history.length,
-        prompt: promptValue,
+        prompt: value,
         output: buffer.join(""),
       };
 
@@ -93,7 +94,7 @@ function Standard() {
   const handleKeyPress = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      handleSubmit(e);
+      handleSubmit();
     }
   };
 
@@ -135,6 +136,8 @@ function Standard() {
     },
   ];
 
+  const commonQuestions = ["What is the weather today?", "Tell me a joke.", "What's the latest news?", "How do I cook pasta?"];
+
   return (
     <div className="main-container">
       <div className="history-icon flex lg:hidden md:hidden ml-2 -mt-2" onClick={toggleHistory}>
@@ -172,6 +175,19 @@ function Standard() {
           )}
         </div>
         <div className="output-container -mt-10 lg:mt-0 border border-white lg:border-gray-200 md:border-gray-200 dark:border-none dark:lg:border-gray-200 dark:md:border-gray-200">
+          {showInitialMessage && (
+            <div className="initial-message">
+              <h2 className="hello-text">Hello.</h2>
+              <p className="help-text">How can I help you today?</p>
+              <div className="common-questions">
+                {commonQuestions.map((question, index) => (
+                  <div key={index} className="question-card" onClick={() => handleSubmit(null, question)}>
+                    {question}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           {output && <div className="output" dangerouslySetInnerHTML={{ __html: output }}></div>}
           {output && !isGenerating && (
             <div className="icon-container mt-4 flex gap-4">
