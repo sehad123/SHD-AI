@@ -20,6 +20,7 @@ function Pro() {
   const [isLiked, setIsLiked] = useState(false);
   const [isCopied, setIsCopied] = useState(false); // Like state
   const [isGenerating, setIsGenerating] = useState(false); // Generation state
+  const [showInitialMessage, setShowInitialMessage] = useState(true); // Show initial message
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
@@ -40,11 +41,11 @@ function Pro() {
     setFile(selectedFile);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (promptValue = null) => {
     setOutput("Generating...");
     setIsGenerating(true);
     setIsLiked(false); // Reset like state
+    setShowInitialMessage(false); // Hide initial message
     window.scrollTo(0, 0); // Scroll ke atas 100 piksel
 
     try {
@@ -72,7 +73,7 @@ function Pro() {
       const contents = [
         {
           role: "user",
-          parts: [imageBase64 ? { inline_data: { mime_type: file.type, data: imageBase64 } } : null, fileContent ? { text: fileContent } : null, { text: prompt }].filter(Boolean),
+          parts: [imageBase64 ? { inline_data: { mime_type: file.type, data: imageBase64 } } : null, fileContent ? { text: fileContent } : null, { text: promptValue || prompt }].filter(Boolean),
         },
       ];
 
@@ -110,7 +111,7 @@ function Pro() {
 
       const historyItem = {
         id: history.length,
-        prompt,
+        prompt: promptValue || prompt,
         output: buffer.join(""),
       };
 
@@ -123,6 +124,13 @@ function Pro() {
       setOutput(`Error: ${e.message}`);
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit();
     }
   };
 
@@ -167,7 +175,7 @@ function Pro() {
   };
 
   const handleRegenerate = async () => {
-    await handleSubmit({ preventDefault: () => {} });
+    await handleSubmit();
   };
 
   const Menu1 = [
@@ -181,10 +189,12 @@ function Pro() {
     },
   ];
 
+  const commonQuestions = ["membuat catatan harian", "cara memasak air", "cara membuat sebuah website", "tuliskan sebuah email"];
+
   return (
     <div className={darkMode ? "dark-mode" : ""}>
       <div className="main-container">
-        <div className="history-icon flex lg:hidden md:hidden ml-2 mt-2" onClick={toggleHistory}>
+        <div className="history-icon flex lg:hidden md:hidden ml-2 mt-3" onClick={toggleHistory}>
           📑
         </div>
         {/* History container */}
@@ -223,6 +233,19 @@ function Pro() {
             )}
           </div>
           <div className="output-container -mt-10 lg:mt-0 border border-white lg:border-gray-200 md:border-gray-200 dark:border-none dark:lg:border-gray-200 dark:md:border-gray-200">
+            {showInitialMessage && (
+              <div className="initial-message -mt-1 lg:mt-0 md:mt-0">
+                <h2 className="hello-text">Hello.</h2>
+                <p className="help-text">Selamat Datang di SHD.AI</p>
+                <div className="common-questions">
+                  {commonQuestions.map((question, index) => (
+                    <div key={index} className="question-card dark:text-gray-800" onClick={() => handleSubmit(question)}>
+                      {question}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
             {output && <div className="output" dangerouslySetInnerHTML={{ __html: output }}></div>}
             {output && !isGenerating && (
               <div className="icon-container mt-4 flex gap-4">
@@ -243,7 +266,7 @@ function Pro() {
           </div>
           {imagePreview && <img src={imagePreview} alt="Preview" className="image-preview" />}
           {filePreview && !imagePreview && <div className="file-preview">{filePreview}</div>}
-          <form onSubmit={handleSubmit} className="form mb-16 lg:mb-0 md:mb-0">
+          <form onSubmit={(e) => handleSubmit()} className="form mb-16 lg:mb-0 md:mb-0">
             <div className="prompt-box">
               <label className="upload-icon">
                 <input type="file" id="file-upload" onChange={handleFileChange} />
@@ -251,7 +274,16 @@ function Pro() {
                   📁
                 </span>
               </label>
-              <input name="prompt" className="prompt-input" placeholder="Masukkan Perintah anda" type="text" value={prompt} onChange={(e) => setPrompt(e.target.value)} />
+              <textarea
+                name="prompt"
+                className="prompt-input"
+                placeholder="Masukkan Perintah anda"
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                onKeyDown={handleKeyPress}
+                rows="1"
+                style={{ resize: "none", overflow: "auto", maxHeight: "6em" }}
+              />
               <button type="submit" className="submit-button">
                 ▶
               </button>

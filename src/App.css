@@ -251,6 +251,64 @@ body {
   background-color: #555;
 }
 
+.initial-message {
+  text-align: center;
+  margin-top: 50px;
+}
+
+.hello-text {
+  font-size: 2.5em;
+  color: #4a90e2;
+  margin-bottom: 10px;
+}
+
+.help-text {
+  font-size: 1.5em;
+  color: #333;
+  margin-bottom: 30px;
+}
+.dark-mode .help-text {
+  color: #fff;
+}
+.common-questions {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.question-card {
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 15px;
+  cursor: pointer;
+  transition: background-color 0.3s, box-shadow 0.3s;
+}
+
+.question-card:hover {
+  background-color: #e0e0e0;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.output-container {
+  padding: 20px;
+}
+
+.output {
+  padding: 10px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+}
+.dark-mode .output {
+  background-color: black;
+}
+.like-button:hover,
+.copy-button:hover {
+  background-color: #e0e0e0;
+}
+
 @media only screen and (max-width: 768px) {
   .history-container {
     display: none; /* Hide history container on small screens */

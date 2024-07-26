@@ -17,6 +17,7 @@ function Standard() {
   const [isLiked, setIsLiked] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [showInitialMessage, setShowInitialMessage] = useState(true);
 
   useEffect(() => {
     const initializeChat = async () => {
@@ -56,18 +57,18 @@ function Standard() {
     initializeChat();
   }, []);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (promptValue = null) => {
     setOutput("Generating...");
     setIsGenerating(true);
     setIsLiked(false);
+    setShowInitialMessage(false);
     window.scrollTo(0, 0);
 
     try {
-      const promptValue = prompt;
+      const value = promptValue || prompt;
       setPrompt("");
 
-      const result = await chat.sendMessageStream(promptValue);
+      const result = await chat.sendMessageStream(value);
 
       const buffer = [];
       const md = new MarkdownIt();
@@ -78,7 +79,7 @@ function Standard() {
 
       const historyItem = {
         id: history.length,
-        prompt: promptValue,
+        prompt: value,
         output: buffer.join(""),
       };
 
@@ -87,6 +88,13 @@ function Standard() {
       setOutput(`Error: ${e.message}`);
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit();
     }
   };
 
@@ -128,6 +136,8 @@ function Standard() {
     },
   ];
 
+  const commonQuestions = ["membuat catatan harian", "cara memasak air", "cara membuat sebuah website", "tuliskan sebuah email"];
+
   return (
     <div className="main-container">
       <div className="history-icon flex lg:hidden md:hidden ml-2 -mt-2" onClick={toggleHistory}>
@@ -165,6 +175,19 @@ function Standard() {
           )}
         </div>
         <div className="output-container -mt-10 lg:mt-0 border border-white lg:border-gray-200 md:border-gray-200 dark:border-none dark:lg:border-gray-200 dark:md:border-gray-200">
+          {showInitialMessage && (
+            <div className="initial-message -mt-1 lg:mt-0 md:mt-0">
+              <h2 className="hello-text">Hello.</h2>
+              <p className="help-text">Selamat Datang di SHD.AI</p>
+              <div className="common-questions">
+                {commonQuestions.map((question, index) => (
+                  <div key={index} className="question-card" onClick={() => handleSubmit(question)}>
+                    {question}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           {output && <div className="output" dangerouslySetInnerHTML={{ __html: output }}></div>}
           {output && !isGenerating && (
             <div className="icon-container mt-4 flex gap-4">
@@ -181,7 +204,16 @@ function Standard() {
 
         <form onSubmit={handleSubmit} className="form mb-16 lg:mb-0 md:mb-0">
           <div className="prompt-box">
-            <input name="prompt" className="prompt-input" placeholder="Masukkan Perintah anda" type="text" value={prompt} onChange={(e) => setPrompt(e.target.value)} />
+            <textarea
+              name="prompt"
+              className="prompt-input"
+              placeholder="Masukkan Perintah anda"
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              onKeyDown={handleKeyPress}
+              rows="1"
+              style={{ resize: "none", overflow: "auto", maxHeight: "6em" }}
+            />
             <button type="submit" className="submit-button">
               ▶
             </button>
