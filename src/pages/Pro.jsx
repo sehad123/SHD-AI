@@ -45,7 +45,7 @@ function Pro() {
     setOutput("Generating...");
     setIsGenerating(true);
     setIsLiked(false); // Reset like state
-    window.scrollTo(0, -50); // Scroll ke atas 100 piksel
+    window.scrollTo(0, 0); // Scroll ke atas 100 piksel
 
     try {
       let fileContent = "";
@@ -253,7 +253,7 @@ function Pro() {
               </label>
               <input name="prompt" className="prompt-input" placeholder="Masukkan Perintah anda" type="text" value={prompt} onChange={(e) => setPrompt(e.target.value)} />
               <button type="submit" className="submit-button">
-                Submit
+                ▶
               </button>
             </div>
           </form>
