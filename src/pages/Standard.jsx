@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import MarkdownIt from "markdown-it";
 import { GoogleGenerativeAI, HarmBlockThreshold, HarmCategory } from "@google/generative-ai";
+import { FaRegThumbsUp, FaThumbsUp, FaCopy, FaCheck } from "react-icons/fa";
 import "../App.css";
 
 const API_KEY = "AIzaSyCLTOiwEHTJpl_SScdmP2ZckCNX5Ci2TAQ";
@@ -13,6 +14,9 @@ function Standard() {
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [historyVisible, setHistoryVisible] = useState(false);
   const [chat, setChat] = useState(null);
+  const [isLiked, setIsLiked] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   useEffect(() => {
     const initializeChat = async () => {
@@ -55,6 +59,8 @@ function Standard() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setOutput("Generating...");
+    setIsGenerating(true);
+    setIsLiked(false);
     window.scrollTo(0, 0);
 
     try {
@@ -79,6 +85,8 @@ function Standard() {
       setHistory([...history, historyItem]);
     } catch (e) {
       setOutput(`Error: ${e.message}`);
+    } finally {
+      setIsGenerating(false);
     }
   };
 
@@ -88,8 +96,12 @@ function Standard() {
   };
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(output).then(() => {
-      alert("Output copied to clipboard");
+    const div = document.createElement("div");
+    div.innerHTML = output;
+    const text = div.textContent || div.innerText || "";
+    navigator.clipboard.writeText(text).then(() => {
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000); // Reset icon after 2 seconds
     });
   };
 
@@ -99,6 +111,10 @@ function Standard() {
 
   const toggleHistory = () => {
     setHistoryVisible(!historyVisible);
+  };
+
+  const handleLike = () => {
+    setIsLiked(!isLiked);
   };
 
   const Menu1 = [
@@ -148,12 +164,21 @@ function Standard() {
             </ul>
           )}
         </div>
-        <div className="output-container -mt-10 lg:mt-0 border border-white lg:border-gray-200 md:border-gray-200">{output && <div className="output" dangerouslySetInnerHTML={{ __html: output }}></div>}</div>
-        {output && (
-          <button id="copy-button" className="copy-button lg:bottom-[95px] lg:right-[30px] md:bottom-[90px] md:right-[30px] bottom-40 right-8" onClick={handleCopy}>
-            🧾
-          </button>
-        )}
+        <div className="output-container -mt-10 lg:mt-0 border border-white lg:border-gray-200 md:border-gray-200 dark:border-none dark:lg:border-gray-200 dark:md:border-gray-200">
+          {output && <div className="output" dangerouslySetInnerHTML={{ __html: output }}></div>}
+          {output && !isGenerating && (
+            <div className="icon-container mt-4 flex gap-4">
+              <button id="like-button" className={`like-button lg:bottom-[95px] lg:right-[110px] md:bottom-[90px] md:right-[110px] bottom-40 right-32 ${isLiked ? "liked" : ""}`} onClick={handleLike}>
+                {isLiked ? <FaThumbsUp color="blue" /> : <FaRegThumbsUp />}
+              </button>
+
+              <button id="copy-button" className="copy-button lg:bottom-[95px] lg:right-[30px] md:bottom-[90px] md:right-[30px] bottom-40 right-8" onClick={handleCopy}>
+                {isCopied ? <FaCheck color="green" /> : <FaCopy />}
+              </button>
+            </div>
+          )}
+        </div>
+
         <form onSubmit={handleSubmit} className="form mb-16 lg:mb-0 md:mb-0">
           <div className="prompt-box">
             <input name="prompt" className="prompt-input" placeholder="Masukkan Perintah anda" type="text" value={prompt} onChange={(e) => setPrompt(e.target.value)} />

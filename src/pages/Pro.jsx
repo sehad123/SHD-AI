@@ -1,7 +1,7 @@
 import { useState } from "react";
 import MarkdownIt from "markdown-it";
 import { Link } from "react-router-dom";
-
+import { FaRegThumbsUp, FaThumbsUp, FaRedo, FaVolumeUp, FaCopy, FaCheck } from "react-icons/fa";
 import { GoogleGenerativeAI, HarmBlockThreshold, HarmCategory } from "@google/generative-ai";
 import "../App.css";
 
@@ -17,6 +17,9 @@ function Pro() {
   const [darkMode, setDarkMode] = useState(true); // Set dark mode by default
   const [dropdownVisible, setDropdownVisible] = useState(false); // Dropdown visibility state
   const [historyVisible, setHistoryVisible] = useState(false); // History visibility state
+  const [isLiked, setIsLiked] = useState(false);
+  const [isCopied, setIsCopied] = useState(false); // Like state
+  const [isGenerating, setIsGenerating] = useState(false); // Generation state
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
@@ -40,6 +43,8 @@ function Pro() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setOutput("Generating...");
+    setIsGenerating(true);
+    setIsLiked(false); // Reset like state
     window.scrollTo(0, -50); // Scroll ke atas 100 piksel
 
     try {
@@ -94,11 +99,6 @@ function Pro() {
         ],
       });
 
-      setPrompt("");
-      setFile(null);
-      setImagePreview("");
-      setFilePreview("");
-
       const result = await model.generateContentStream({ contents });
 
       const buffer = [];
@@ -115,8 +115,14 @@ function Pro() {
       };
 
       setHistory([...history, historyItem]);
+      setPrompt("");
+      setFile(null);
+      setImagePreview("");
+      setFilePreview("");
     } catch (e) {
       setOutput(`Error: ${e.message}`);
+    } finally {
+      setIsGenerating(false);
     }
   };
 
@@ -126,8 +132,12 @@ function Pro() {
   };
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(output).then(() => {
-      alert("Output copied to clipboard");
+    const div = document.createElement("div");
+    div.innerHTML = output;
+    const text = div.textContent || div.innerText || "";
+    navigator.clipboard.writeText(text).then(() => {
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000); // Reset icon after 2 seconds
     });
   };
 
@@ -141,6 +151,23 @@ function Pro() {
 
   const toggleHistory = () => {
     setHistoryVisible(!historyVisible);
+  };
+
+  const speakOutput = () => {
+    if ("speechSynthesis" in window) {
+      const utterance = new SpeechSynthesisUtterance(output.replace(/<[^>]*>/g, ""));
+      speechSynthesis.speak(utterance);
+    } else {
+      alert("Your browser does not support speech synthesis.");
+    }
+  };
+
+  const handleLike = () => {
+    setIsLiked(!isLiked);
+  };
+
+  const handleRegenerate = async () => {
+    await handleSubmit({ preventDefault: () => {} });
   };
 
   const Menu1 = [
@@ -180,7 +207,7 @@ function Pro() {
               <h1 className="title">SHD.AI</h1>
               <span className="dropdown-icon">▼</span>
             </div>
-            <button className="dark-mode-button -translate-y-8 lg:translate-y-0" onClick={handleToggleDarkMode}>
+            <button className="dark-mode-button -translate-y-8 lg:-translate-y-5" onClick={handleToggleDarkMode}>
               {darkMode ? "☀️" : "🌙"}
             </button>
             {dropdownVisible && (
@@ -197,10 +224,21 @@ function Pro() {
           </div>
           <div className="output-container -mt-10 lg:mt-0 border border-white lg:border-gray-200 md:border-gray-200 dark:border-none dark:lg:border-gray-200 dark:md:border-gray-200">
             {output && <div className="output" dangerouslySetInnerHTML={{ __html: output }}></div>}
-            {output && (
-              <button id="copy-button" className="copy-button lg:bottom-[95px] lg:right-[30px] md:bottom-[90px] md:right-[30px] bottom-40 right-8" onClick={handleCopy}>
-                🧾
-              </button>
+            {output && !isGenerating && (
+              <div className="icon-container mt-4 flex gap-4">
+                <button id="sound-button" className="sound-button lg:bottom-[95px] lg:right-[140px] md:bottom-[90px] md:right-[140px] bottom-40 right-40" onClick={speakOutput}>
+                  <FaVolumeUp />
+                </button>
+                <button id="like-button" className={`like-button lg:bottom-[95px] lg:right-[110px] md:bottom-[90px] md:right-[110px] bottom-40 right-32 ${isLiked ? "liked" : ""}`} onClick={handleLike}>
+                  {isLiked ? <FaThumbsUp color="blue" /> : <FaRegThumbsUp />}
+                </button>
+                <button id="regenerate-button" className="regenerate-button lg:bottom-[95px] lg:right-[80px] md:bottom-[90px] md:right-[80px] bottom-40 right-24" onClick={handleRegenerate}>
+                  <FaRedo />
+                </button>
+                <button id="copy-button" className="copy-button lg:bottom-[95px] lg:right-[30px] md:bottom-[90px] md:right-[30px] bottom-40 right-8" onClick={handleCopy}>
+                  {isCopied ? <FaCheck color="green" /> : <FaCopy />}
+                </button>
+              </div>
             )}
           </div>
           {imagePreview && <img src={imagePreview} alt="Preview" className="image-preview" />}
@@ -215,7 +253,7 @@ function Pro() {
               </label>
               <input name="prompt" className="prompt-input" placeholder="Masukkan Perintah anda" type="text" value={prompt} onChange={(e) => setPrompt(e.target.value)} />
               <button type="submit" className="submit-button">
-                ▶
+                Submit
               </button>
             </div>
           </form>
