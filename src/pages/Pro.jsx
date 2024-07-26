@@ -184,7 +184,7 @@ function Pro() {
   return (
     <div className={darkMode ? "dark-mode" : ""}>
       <div className="main-container">
-        <div className="history-icon flex lg:hidden md:hidden ml-2 -mt-2" onClick={toggleHistory}>
+        <div className="history-icon flex lg:hidden md:hidden ml-2 mt-2" onClick={toggleHistory}>
           📑
         </div>
         {/* History container */}
@@ -201,7 +201,7 @@ function Pro() {
             ))}
           </ul>
         </div>
-        <div className="chat-container">
+        <div className="chat-container mt-5 lg:mt-0 md:mt-0">
           <div className="header">
             <div className="title-container -translate-y-8 lg:translate-y-0 mx-auto lg:mx-0 md:mx-0" onClick={toggleDropdown}>
               <h1 className="title">SHD.AI</h1>
