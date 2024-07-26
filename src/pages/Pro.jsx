@@ -14,13 +14,12 @@ function Pro() {
   const [imagePreview, setImagePreview] = useState("");
   const [filePreview, setFilePreview] = useState("");
   const [history, setHistory] = useState([]);
-  const [darkMode, setDarkMode] = useState(true); // Set dark mode by default
-  const [dropdownVisible, setDropdownVisible] = useState(false); // Dropdown visibility state
-  const [historyVisible, setHistoryVisible] = useState(false); // History visibility state
+  const [darkMode, setDarkMode] = useState(true);
+  const [dropdownVisible, setDropdownVisible] = useState(false);
+  const [historyVisible, setHistoryVisible] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
-  const [isCopied, setIsCopied] = useState(false); // Like state
-  const [isGenerating, setIsGenerating] = useState(false); // Generation state
-  const [showInitialMessage, setShowInitialMessage] = useState(true); // Show initial message
+  const [isCopied, setIsCopied] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
@@ -28,12 +27,12 @@ function Pro() {
       const reader = new FileReader();
       reader.onload = (event) => {
         setImagePreview(event.target.result);
-        setFilePreview(""); // Clear file preview when image is selected
+        setFilePreview("");
       };
       reader.readAsDataURL(selectedFile);
     } else if (selectedFile) {
-      setFilePreview(selectedFile.name); // Show file name as preview
-      setImagePreview(""); // Clear image preview when file is selected
+      setFilePreview(selectedFile.name);
+      setImagePreview("");
     } else {
       setImagePreview("");
       setFilePreview("");
@@ -41,12 +40,12 @@ function Pro() {
     setFile(selectedFile);
   };
 
-  const handleSubmit = async (promptValue = null) => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     setOutput("Generating...");
     setIsGenerating(true);
-    setIsLiked(false); // Reset like state
-    setShowInitialMessage(false); // Hide initial message
-    window.scrollTo(0, 0); // Scroll ke atas 100 piksel
+    setIsLiked(false);
+    window.scrollTo(0, 0);
 
     try {
       let fileContent = "";
@@ -73,7 +72,7 @@ function Pro() {
       const contents = [
         {
           role: "user",
-          parts: [imageBase64 ? { inline_data: { mime_type: file.type, data: imageBase64 } } : null, fileContent ? { text: fileContent } : null, { text: promptValue || prompt }].filter(Boolean),
+          parts: [imageBase64 ? { inline_data: { mime_type: file.type, data: imageBase64 } } : null, fileContent ? { text: fileContent } : null, { text: prompt }].filter(Boolean),
         },
       ];
 
@@ -111,7 +110,7 @@ function Pro() {
 
       const historyItem = {
         id: history.length,
-        prompt: promptValue || prompt,
+        prompt,
         output: buffer.join(""),
       };
 
@@ -130,13 +129,13 @@ function Pro() {
   const handleKeyPress = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      handleSubmit();
+      handleSubmit(e);
     }
   };
 
   const handleHistoryClick = (item) => {
     setOutput(item.output);
-    setHistoryVisible(false); // Hide history container on mobile view
+    setHistoryVisible(false);
   };
 
   const handleCopy = () => {
@@ -145,7 +144,7 @@ function Pro() {
     const text = div.textContent || div.innerText || "";
     navigator.clipboard.writeText(text).then(() => {
       setIsCopied(true);
-      setTimeout(() => setIsCopied(false), 2000); // Reset icon after 2 seconds
+      setTimeout(() => setIsCopied(false), 2000);
     });
   };
 
@@ -175,7 +174,7 @@ function Pro() {
   };
 
   const handleRegenerate = async () => {
-    await handleSubmit();
+    await handleSubmit({ preventDefault: () => {} });
   };
 
   const Menu1 = [
@@ -184,12 +183,10 @@ function Pro() {
       link: "/",
     },
     {
-      name: "Versi pro",
+      name: "Versi Pro",
       link: "/pro",
     },
   ];
-
-  const commonQuestions = ["membuat catatan harian", "cara memasak air", "cara membuat sebuah website", "tuliskan sebuah email"];
 
   return (
     <div className={darkMode ? "dark-mode" : ""}>
@@ -197,7 +194,6 @@ function Pro() {
         <div className="history-icon flex lg:hidden md:hidden ml-2 mt-3" onClick={toggleHistory}>
           📑
         </div>
-        {/* History container */}
         <div className={`history-container ${historyVisible ? "full-screen" : ""} ${historyVisible ? "block" : "hidden"} lg:block md:block`}>
           <div className="close-icon lg:hidden md:hidden" onClick={toggleHistory}>
             ❌
@@ -233,19 +229,6 @@ function Pro() {
             )}
           </div>
           <div className="output-container -mt-10 lg:mt-0 border border-white lg:border-gray-200 md:border-gray-200 dark:border-none dark:lg:border-gray-200 dark:md:border-gray-200">
-            {showInitialMessage && (
-              <div className="initial-message -mt-1 lg:mt-0 md:mt-0">
-                <h2 className="hello-text">Hello.</h2>
-                <p className="help-text">Selamat Datang di SHD.AI</p>
-                <div className="common-questions">
-                  {commonQuestions.map((question, index) => (
-                    <div key={index} className="question-card dark:text-gray-800" onClick={() => handleSubmit(question)}>
-                      {question}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
             {output && <div className="output" dangerouslySetInnerHTML={{ __html: output }}></div>}
             {output && !isGenerating && (
               <div className="icon-container mt-4 flex gap-4">
@@ -266,7 +249,7 @@ function Pro() {
           </div>
           {imagePreview && <img src={imagePreview} alt="Preview" className="image-preview" />}
           {filePreview && !imagePreview && <div className="file-preview">{filePreview}</div>}
-          <form onSubmit={(e) => handleSubmit()} className="form mb-16 lg:mb-0 md:mb-0">
+          <form onSubmit={handleSubmit} className="form mb-16 lg:mb-0 md:mb-0">
             <div className="prompt-box">
               <label className="upload-icon">
                 <input type="file" id="file-upload" onChange={handleFileChange} />
