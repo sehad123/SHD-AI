@@ -183,8 +183,8 @@ function Pro() {
 
   return (
     <div className={darkMode ? "dark-mode" : ""}>
-      <div className="main-container">
-        <div className="history-icon flex lg:hidden md:hidden ml-2 -mt-2" onClick={toggleHistory}>
+      <div className="main-container  mt-3 lg:mt-0 md:mt-0">
+        <div className="history-icon flex lg:hidden md:hidden ml-2 " onClick={toggleHistory}>
           📑
         </div>
         {/* History container */}
