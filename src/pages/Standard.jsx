@@ -57,11 +57,12 @@ function Standard() {
     initializeChat();
   }, []);
 
-  const handleSubmit = async (promptValue = null) => {
+  const handleSubmit = async (promptValue = null, e) => {
+    e.preventDefault();
+    setShowInitialMessage(false);
     setOutput("Generating...");
     setIsGenerating(true);
     setIsLiked(false);
-    setShowInitialMessage(false);
     window.scrollTo(0, 0);
 
     try {
@@ -136,8 +137,7 @@ function Standard() {
     },
   ];
 
-  const commonQuestions = ["What is the weather today?", "Tell me a joke.", "What's the latest news?", "How do I cook pasta?"];
-
+  const commonQuestions = ["Cara Memasak Air", "Cerita lelucon", "Membuat Website Pemula", "Tutorial Belajar Pyhton"];
   return (
     <div className="main-container">
       <div className="history-icon flex lg:hidden md:hidden ml-2 -mt-2" onClick={toggleHistory}>
@@ -176,7 +176,7 @@ function Standard() {
         </div>
         <div className="output-container -mt-10 lg:mt-0 border border-white lg:border-gray-200 md:border-gray-200 dark:border-none dark:lg:border-gray-200 dark:md:border-gray-200">
           {showInitialMessage && (
-            <div className="initial-message hidden lg:block">
+            <div className="initial-message">
               <h2 className="hello-text">Hello.</h2>
               <p className="help-text">How can I help you today?</p>
               <div className="common-questions">
