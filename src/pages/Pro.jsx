@@ -20,6 +20,7 @@ function Pro() {
   const [isLiked, setIsLiked] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [showInitialMessage, setShowInitialMessage] = useState(true);
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
@@ -40,11 +41,13 @@ function Pro() {
     setFile(selectedFile);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (e, question) => {
+    if (e) e.preventDefault();
+    const currentPrompt = question || prompt;
     setOutput("Generating...");
     setIsGenerating(true);
     setIsLiked(false);
+    setShowInitialMessage(false); // Hide the initial message
     window.scrollTo(0, 0);
 
     try {
@@ -72,7 +75,7 @@ function Pro() {
       const contents = [
         {
           role: "user",
-          parts: [imageBase64 ? { inline_data: { mime_type: file.type, data: imageBase64 } } : null, fileContent ? { text: fileContent } : null, { text: prompt }].filter(Boolean),
+          parts: [imageBase64 ? { inline_data: { mime_type: file.type, data: imageBase64 } } : null, fileContent ? { text: fileContent } : null, { text: currentPrompt }].filter(Boolean),
         },
       ];
 
@@ -110,7 +113,7 @@ function Pro() {
 
       const historyItem = {
         id: history.length,
-        prompt,
+        prompt: currentPrompt,
         output: buffer.join(""),
       };
 
@@ -159,6 +162,8 @@ function Pro() {
   const toggleHistory = () => {
     setHistoryVisible(!historyVisible);
   };
+
+  const commonQuestions = ["Cara Memasak Air", "Cerita lelucon", "Membuat Website Pemula", "Tutorial Belajar Pyhton"];
 
   const speakOutput = () => {
     if ("speechSynthesis" in window) {
@@ -229,6 +234,19 @@ function Pro() {
             )}
           </div>
           <div className="output-container -mt-10 lg:mt-0 border border-white lg:border-gray-200 md:border-gray-200 dark:border-none dark:lg:border-gray-200 dark:md:border-gray-200">
+            {showInitialMessage && (
+              <div className="initial-message -mt-0 lg:mt-16">
+                <h2 className="hello-text">Hello.</h2>
+                <p className="help-text">Welcome to SHD.AI</p>
+                <div className="common-questions">
+                  {commonQuestions.map((question, index) => (
+                    <div key={index} className="question-card" onClick={(e) => handleSubmit(e, question)}>
+                      {question}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
             {output && <div className="output" dangerouslySetInnerHTML={{ __html: output }}></div>}
             {output && !isGenerating && (
               <div className="icon-container mt-4 flex gap-4">
@@ -249,7 +267,7 @@ function Pro() {
           </div>
           {imagePreview && <img src={imagePreview} alt="Preview" className="image-preview" />}
           {filePreview && !imagePreview && <div className="file-preview">{filePreview}</div>}
-          <form onSubmit={handleSubmit} className="form mb-16 lg:mb-0 md:mb-0">
+          <form onSubmit={(e) => handleSubmit(e, null)} className="form mb-16 lg:mb-0 md:mb-0">
             <div className="prompt-box">
               <label className="upload-icon">
                 <input type="file" id="file-upload" onChange={handleFileChange} />

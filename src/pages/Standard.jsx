@@ -136,8 +136,7 @@ function Standard() {
     },
   ];
 
-  const commonQuestions = ["What is the weather today?", "Tell me a joke.", "What's the latest news?", "How do I cook pasta?"];
-
+  const commonQuestions = ["Cara Memasak Air", "Cerita lelucon", "Membuat Website Pemula", "Tutorial Belajar Pyhton"];
   return (
     <div className="main-container">
       <div className="history-icon flex lg:hidden md:hidden ml-2 -mt-2" onClick={toggleHistory}>
@@ -176,9 +175,9 @@ function Standard() {
         </div>
         <div className="output-container -mt-10 lg:mt-0 border border-white lg:border-gray-200 md:border-gray-200 dark:border-none dark:lg:border-gray-200 dark:md:border-gray-200">
           {showInitialMessage && (
-            <div className="initial-message">
+            <div className="initial-message -mt-0 lg:mt-16">
               <h2 className="hello-text">Hello.</h2>
-              <p className="help-text">How can I help you today?</p>
+              <p className="help-text">Welcome to SHD.AI</p>
               <div className="common-questions">
                 {commonQuestions.map((question, index) => (
                   <div key={index} className="question-card" onClick={() => handleSubmit(null, question)}>
