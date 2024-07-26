@@ -6,6 +6,7 @@ import { FaRegThumbsUp, FaThumbsUp, FaCopy, FaCheck } from "react-icons/fa";
 import "../App.css";
 
 const API_KEY = "AIzaSyCLTOiwEHTJpl_SScdmP2ZckCNX5Ci2TAQ";
+
 function Standard() {
   const [prompt, setPrompt] = useState("");
   const [output, setOutput] = useState("");
@@ -56,16 +57,17 @@ function Standard() {
     initializeChat();
   }, []);
 
-  const handleSubmit = async (e) => {
-    if (e) e.preventDefault(); // Prevent the default form submission
+  const handleSubmit = async (e, question) => {
+    if (e) e.preventDefault();
+    const currentPrompt = question || prompt;
     setOutput("Generating...");
     setIsGenerating(true);
     setIsLiked(false);
-    setShowInitialMessage(false); // Hide the initial message
+    setShowInitialMessage(false);
     window.scrollTo(0, 0);
 
     try {
-      const value = prompt;
+      const value = currentPrompt;
       setPrompt("");
 
       const result = await chat.sendMessageStream(value);
@@ -94,7 +96,7 @@ function Standard() {
   const handleKeyPress = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      handleSubmit();
+      handleSubmit(e);
     }
   };
 
@@ -109,7 +111,7 @@ function Standard() {
     const text = div.textContent || div.innerText || "";
     navigator.clipboard.writeText(text).then(() => {
       setIsCopied(true);
-      setTimeout(() => setIsCopied(false), 2000); // Reset icon after 2 seconds
+      setTimeout(() => setIsCopied(false), 2000);
     });
   };
 
@@ -137,6 +139,7 @@ function Standard() {
   ];
 
   const commonQuestions = ["Cara Memasak Air", "Cerita lelucon", "Membuat Website Pemula", "Tutorial Belajar Pyhton"];
+
   return (
     <div className="main-container">
       <div className="history-icon flex lg:hidden md:hidden ml-2 -mt-2" onClick={toggleHistory}>
@@ -180,7 +183,7 @@ function Standard() {
               <p className="help-text">Welcome to SHD.AI</p>
               <div className="common-questions">
                 {commonQuestions.map((question, index) => (
-                  <div key={index} className="question-card" onClick={() => handleSubmit(null, question)}>
+                  <div key={index} className="question-card" onClick={(e) => handleSubmit(e, question)}>
                     {question}
                   </div>
                 ))}
@@ -201,7 +204,7 @@ function Standard() {
           )}
         </div>
 
-        <form onSubmit={handleSubmit} className="form mb-16 lg:mb-0 md:mb-0">
+        <form onSubmit={(e) => handleSubmit(e, null)} className="form mb-16 lg:mb-0 md:mb-0">
           <div className="prompt-box">
             <textarea
               name="prompt"
