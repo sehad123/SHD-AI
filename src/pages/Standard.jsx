@@ -17,7 +17,7 @@ function Standard() {
   useEffect(() => {
     const initializeChat = async () => {
       const genAI = new GoogleGenerativeAI(API_KEY);
-      const model = genAI.getGenerativeModel({
+      const model = await genAI.getGenerativeModel({
         model: "gemini-1.5-flash",
         safetySettings: [
           {
@@ -42,7 +42,7 @@ function Standard() {
       const newChat = model.startChat({
         history: [],
         generationConfig: {
-          maxOutputTokens: 100,
+          maxOutputTokens: 1000,
         },
       });
 
@@ -84,7 +84,7 @@ function Standard() {
 
   const handleHistoryClick = (item) => {
     setOutput(item.output);
-    setHistoryVisible(false); // Menyembunyikan history container pada tampilan mobile
+    setHistoryVisible(false);
   };
 
   const handleCopy = () => {
@@ -113,62 +113,55 @@ function Standard() {
   ];
 
   return (
-    <div>
-      <div className="main-container">
-        {/* Icon history untuk tampilan mobile */}
-        <div className="history-icon flex lg:hidden md:hidden ml-2 -mt-2" onClick={toggleHistory}>
-          📑
+    <div className="main-container">
+      <div className="history-icon flex lg:hidden md:hidden ml-2 -mt-2" onClick={toggleHistory}>
+        📑
+      </div>
+      <div className={`history-container ${historyVisible ? "full-screen" : ""} ${historyVisible ? "block" : "hidden"} lg:block md:block`}>
+        <div className="close-icon lg:hidden md:hidden" onClick={toggleHistory}>
+          ❌
         </div>
-        {/* History container */}
-        <div className={`history-container ${historyVisible ? "full-screen" : ""} ${historyVisible ? "block" : "hidden"} lg:block md:block`}>
-          {/* Icon close untuk tampilan mobile */}
-          <div className="close-icon lg:hidden md:hidden" onClick={toggleHistory}>
-            ❌
+        <h2 className="history-title text-center">History</h2>
+        <ul className="history-list">
+          {history.map((item) => (
+            <li key={item.id} className="history-item" onClick={() => handleHistoryClick(item)}>
+              {item.prompt}
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div className="chat-container">
+        <div className="header">
+          <div className="title-container -translate-y-8 lg:translate-y-0 mx-auto lg:mx-0 md:mx-0" onClick={toggleDropdown}>
+            <h1 className="title">SHD.AI</h1>
+            <span className="dropdown-icon">▼</span>
           </div>
-          <h2 className="history-title text-center">History</h2>
-          <ul className="history-list">
-            {history.map((item) => (
-              <li key={item.id} className="history-item" onClick={() => handleHistoryClick(item)}>
-                {item.prompt}
-              </li>
-            ))}
-          </ul>
+          {dropdownVisible && (
+            <ul className="dropdown-menu ml-24 lg:mt-3 lg:ml-0 md:ml-0">
+              {Menu1.map((menuItem, index) => (
+                <li key={index} className="cursor-pointer p-2">
+                  <Link to={menuItem.link} className="block w-full h-full">
+                    {menuItem.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
-        <div className="chat-container">
-          <div className="header">
-            <div className="title-container -translate-y-8 lg:translate-y-0 mx-auto lg:mx-0 md:mx-0" onClick={toggleDropdown}>
-              <h1 className="title">SHD.AI</h1>
-              <span className="dropdown-icon">▼</span>
-            </div>
-            {dropdownVisible && (
-              <ul className="dropdown-menu ml-24 lg:mt-3 lg:ml-0 md:ml-0">
-                {Menu1.map((menuItem, index) => (
-                  <li key={index} className="cursor-pointer p-2">
-                    <Link to={menuItem.link} className="block w-full h-full">
-                      {menuItem.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            )}
+        <div className="output-container -mt-10 lg:mt-0 border border-white lg:border-gray-200 md:border-gray-200">{output && <div className="output" dangerouslySetInnerHTML={{ __html: output }}></div>}</div>
+        {output && (
+          <button id="copy-button" className="copy-button lg:bottom-[95px] lg:right-[30px] md:bottom-[90px] md:right-[30px] bottom-40 right-8" onClick={handleCopy}>
+            🧾
+          </button>
+        )}
+        <form onSubmit={handleSubmit} className="form mb-16 lg:mb-0 md:mb-0">
+          <div className="prompt-box">
+            <input name="prompt" className="prompt-input" placeholder="Masukkan Perintah anda" type="text" value={prompt} onChange={(e) => setPrompt(e.target.value)} />
+            <button type="submit" className="submit-button">
+              ▶
+            </button>
           </div>
-          <div className="output-container -mt-10 lg:mt-0 border border-white lg:border-gray-200 md:border-gray-200">
-            {output && <div className="output" dangerouslySetInnerHTML={{ __html: output }}></div>}
-            {output && (
-              <button id="copy-button" className="copy-button" onClick={handleCopy}>
-                🧾
-              </button>
-            )}
-          </div>
-          <form onSubmit={handleSubmit} className="form mb-16 lg:mb-0 md:mb-0">
-            <div className="prompt-box">
-              <input name="prompt" className="prompt-input" placeholder="Masukkan Perintah anda" type="text" value={prompt} onChange={(e) => setPrompt(e.target.value)} />
-              <button type="submit" className="submit-button">
-                ▶
-              </button>
-            </div>
-          </form>
-        </div>
+        </form>
       </div>
     </div>
   );

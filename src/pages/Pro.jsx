@@ -184,7 +184,7 @@ function Pro() {
               {darkMode ? "☀️" : "🌙"}
             </button>
             {dropdownVisible && (
-              <ul className="dropdown-menu ml-24 lg:ml-0 md:ml-0">
+              <ul className="dropdown-menu ml-24 lg:mt-3 lg:ml-0 md:ml-0">
                 {Menu1.map((menuItem, index) => (
                   <li key={index} className="cursor-pointer p-2">
                     <Link to={menuItem.link} className="block w-full h-full">
@@ -198,7 +198,7 @@ function Pro() {
           <div className="output-container -mt-10 lg:mt-0 border border-white lg:border-gray-200 md:border-gray-200 dark:border-none dark:lg:border-gray-200 dark:md:border-gray-200">
             {output && <div className="output" dangerouslySetInnerHTML={{ __html: output }}></div>}
             {output && (
-              <button id="copy-button" className="copy-button" onClick={handleCopy}>
+              <button id="copy-button" className="copy-button lg:bottom-[95px] lg:right-[30px] md:bottom-[90px] md:right-[30px] bottom-40 right-8" onClick={handleCopy}>
                 🧾
               </button>
             )}
