@@ -15,6 +15,37 @@ body {
   overflow-y: auto;
 }
 
+.profile-dropdown {
+  background-color: #ffffff; /* Warna latar belakang dropdown */
+  color: #000000; /* Warna teks */
+  border: 1px solid #ccc; /* Batas dropdown */
+  border-radius: 8px; /* Membulatkan sudut dropdown */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Bayangan dropdown */
+  padding: 16px; /* Jarak dalam */
+  z-index: 1000; /* Memastikan dropdown berada di depan elemen lain */
+}
+
+.profile-dropdown p {
+  margin: 0;
+  padding: 4px 0;
+  color: #333333; /* Warna teks */
+}
+
+.profile-dropdown button {
+  display: block;
+  width: 100%;
+  padding: 8px 16px;
+  background-color: #f8f8f8; /* Warna latar belakang tombol */
+  color: #ff0000; /* Warna teks tombol */
+  border: none; /* Menghilangkan batas tombol */
+  cursor: pointer; /* Menunjukkan bahwa elemen bisa diklik */
+  text-align: left; /* Menyelaraskan teks ke kiri */
+}
+
+.profile-dropdown button:hover {
+  background-color: #f1f1f1; /* Warna latar belakang tombol saat dihover */
+}
+
 .header {
   display: flex;
   justify-content: space-between;
@@ -78,8 +109,66 @@ body {
   list-style: none;
   padding: 0;
 }
+.delete-icon {
+  cursor: pointer;
+  margin-left: 10px;
+  color: red;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.modal-buttons {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.confirm-button,
+.cancel-button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.dark-mode .modal-content h3,
+p {
+  color: black;
+}
+
+.confirm-button {
+  background-color: #4caf50;
+  color: white;
+}
+
+.cancel-button {
+  background-color: #f44336;
+  color: white;
+}
 
 .history-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   padding: 8px 16px;
   cursor: pointer;
   border-bottom: 1px solid #ddd;
@@ -225,7 +314,7 @@ body {
 }
 
 .dark-mode .output {
-  color: #fff;
+  color: #333;
 }
 
 .dark-mode .history-item {
@@ -304,7 +393,7 @@ body {
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
 }
 .dark-mode .output {
-  background-color: black;
+  background-color: #fff;
 }
 .like-button:hover,
 .copy-button:hover {

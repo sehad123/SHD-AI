@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import MarkdownIt from "markdown-it";
-import { Link } from "react-router-dom";
-import { FaRegThumbsUp, FaThumbsUp, FaRedo, FaVolumeUp, FaCopy, FaCheck } from "react-icons/fa";
+import { Link, useNavigate } from "react-router-dom";
+import { FaRegThumbsUp, FaThumbsUp, FaRedo, FaVolumeUp, FaCopy, FaTrash, FaCheck, FaUser } from "react-icons/fa";
 import { GoogleGenerativeAI, HarmBlockThreshold, HarmCategory } from "@google/generative-ai";
+import axios from "axios";
 import "../App.css";
 
 const API_KEY = "AIzaSyCLTOiwEHTJpl_SScdmP2ZckCNX5Ci2TAQ";
@@ -17,10 +18,58 @@ function Pro() {
   const [darkMode, setDarkMode] = useState(true);
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [historyVisible, setHistoryVisible] = useState(false);
+  const [profileDropdownVisible, setProfileDropdownVisible] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [showInitialMessage, setShowInitialMessage] = useState(true);
+  const [username, setUsername] = useState(""); // Add state for username
+  const [email, setEmail] = useState(""); // Add state for email
+  const [confirmDeleteVisible, setConfirmDeleteVisible] = useState(false);
+  const [deleteItemId, setDeleteItemId] = useState(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+
+      try {
+        const response = await axios.get("http://localhost:5001/profile", {
+          headers: { Authorization: token },
+        });
+        setUsername(response.data.username);
+        setEmail(response.data.email);
+      } catch (error) {
+        console.error("Error fetching user profile:", error);
+        navigate("/login");
+      }
+    };
+
+    const fetchUserHistory = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+
+      try {
+        const response = await axios.get("http://localhost:5001/history", {
+          headers: { Authorization: token },
+        });
+        setHistory(response.data);
+      } catch (error) {
+        console.error("Error fetching user history:", error);
+        navigate("/login");
+      }
+    };
+
+    fetchUserProfile();
+    fetchUserHistory();
+  }, [navigate]);
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
@@ -118,6 +167,11 @@ function Pro() {
       };
 
       setHistory([...history, historyItem]);
+
+      // Save history to backend
+      const token = localStorage.getItem("token");
+      await axios.post("http://localhost:5001/history", { history: JSON.stringify(historyItem) }, { headers: { Authorization: token } });
+
       setPrompt("");
       setFile(null);
       setImagePreview("");
@@ -126,6 +180,25 @@ function Pro() {
       setOutput(`Error: ${e.message}`);
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const confirmDeleteHistory = (id) => {
+    setDeleteItemId(id);
+    setConfirmDeleteVisible(true);
+  };
+
+  const handleDeleteHistory = async () => {
+    const token = localStorage.getItem("token");
+    try {
+      await axios.delete(`http://localhost:5001/history/${deleteItemId}`, {
+        headers: { Authorization: token },
+      });
+      setHistory(history.filter((item) => item.id !== deleteItemId));
+      setConfirmDeleteVisible(false);
+      setDeleteItemId(null);
+    } catch (error) {
+      console.error("Error deleting history:", error);
     }
   };
 
@@ -139,6 +212,7 @@ function Pro() {
   const handleHistoryClick = (item) => {
     setOutput(item.output);
     setHistoryVisible(false);
+    setShowInitialMessage(false); // Sembunyikan pertanyaan awal saat histori diklik
   };
 
   const handleCopy = () => {
@@ -163,6 +237,15 @@ function Pro() {
     setHistoryVisible(!historyVisible);
   };
 
+  const handleProfileClick = () => {
+    setProfileDropdownVisible(!profileDropdownVisible);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/login");
+  };
+
   const commonQuestions = ["Cara Memasak Air", "Cerita lelucon", "Membuat Website Pemula", "Tutorial Belajar Pyhton"];
 
   const speakOutput = () => {
@@ -178,14 +261,45 @@ function Pro() {
     setIsLiked(!isLiked);
   };
 
+  const groupByDate = (historyItems) => {
+    return historyItems.reduce((groups, item) => {
+      const date = new Date(item.created_at).toLocaleDateString("id-ID", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+      if (!groups[date]) {
+        groups[date] = [];
+      }
+      groups[date].push(item);
+      return groups;
+    }, {});
+  };
+
+  const groupedHistory = groupByDate(history);
+
   const handleRegenerate = async () => {
     await handleSubmit({ preventDefault: () => {} });
+  };
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
+
+    if (date.toDateString() === today.toDateString()) {
+      return "Hari ini";
+    } else if (date.toDateString() === yesterday.toDateString()) {
+      return "Kemarin";
+    } else {
+      return date.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
+    }
   };
 
   const Menu1 = [
     {
       name: "Versi Standard",
-      link: "/",
+      link: "/standard",
     },
     {
       name: "Versi Pro",
@@ -204,23 +318,45 @@ function Pro() {
             ❌
           </div>
           <h2 className="history-title text-center">History</h2>
-          <ul className="history-list">
-            {history.map((item) => (
-              <li key={item.id} className="history-item" onClick={() => handleHistoryClick(item)}>
-                {item.prompt}
-              </li>
-            ))}
-          </ul>
+          {Object.keys(groupedHistory).map((date) => (
+            <div key={date} className="date-group">
+              <h2 className="ml-4 font-bold mt-6">{formatDate(date)}</h2>
+              <ul className="history-list">
+                {groupedHistory[date].map((item) => (
+                  <li key={item.id} className="history-item" onClick={() => handleHistoryClick(item)}>
+                    <span>{item.prompt}</span>
+                    <FaTrash className="delete-icon" onClick={() => confirmDeleteHistory(item.id)} />
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
         <div className="chat-container mt-5 lg:mt-0 md:mt-0">
-          <div className="header">
+          <div className="header flex justify-between items-center">
             <div className="title-container -translate-y-8 lg:translate-y-0 mx-auto lg:mx-0 md:mx-0" onClick={toggleDropdown}>
               <h1 className="title">SHD.AI</h1>
               <span className="dropdown-icon">▼</span>
             </div>
-            <button className="dark-mode-button -translate-y-8 lg:-translate-y-5" onClick={handleToggleDarkMode}>
-              {darkMode ? "☀️" : "🌙"}
-            </button>
+            <div className="flex items-center">
+              <button className="dark-mode-button -translate-y-8 lg:-translate-y-5 mr-3" onClick={handleToggleDarkMode}>
+                {darkMode ? "☀️" : "🌙"}
+              </button>
+              <div className="profile-container relative lg:-mt-10 -mt-16 md:-mt-10">
+                <FaUser className="text-xl cursor-pointer" onClick={handleProfileClick} />
+                {profileDropdownVisible && (
+                  <div className="profile-dropdown absolute right-0 mt-2 w-max">
+                    <div className="p-4">
+                      <p>Email: {email}</p>
+                      <p>Username: {username}</p>
+                    </div>
+                    <button onClick={handleLogout} className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-100">
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
             {dropdownVisible && (
               <ul className="dropdown-menu ml-24 lg:mt-3 lg:ml-0 md:ml-0">
                 {Menu1.map((menuItem, index) => (
@@ -290,6 +426,22 @@ function Pro() {
               </button>
             </div>
           </form>
+          {confirmDeleteVisible && (
+            <div className="modal-overlay">
+              <div className="modal-content">
+                <h3>Konfirmasi Hapus</h3>
+                <p>Apakah Anda yakin ingin menghapus item ini?</p>
+                <div className="modal-buttons">
+                  <button onClick={handleDeleteHistory} className="confirm-button">
+                    Ya
+                  </button>
+                  <button onClick={() => setConfirmDeleteVisible(false)} className="cancel-button">
+                    Tidak
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

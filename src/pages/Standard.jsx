@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import MarkdownIt from "markdown-it";
 import { GoogleGenerativeAI, HarmBlockThreshold, HarmCategory } from "@google/generative-ai";
-import { FaRegThumbsUp, FaThumbsUp, FaCopy, FaCheck } from "react-icons/fa";
+import { FaRegThumbsUp, FaThumbsUp, FaCopy, FaCheck, FaUser, FaTrash } from "react-icons/fa";
+import axios from "axios";
+
 import "../App.css";
 
 const API_KEY = "AIzaSyCLTOiwEHTJpl_SScdmP2ZckCNX5Ci2TAQ";
@@ -13,13 +15,57 @@ function Standard() {
   const [history, setHistory] = useState([]);
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [historyVisible, setHistoryVisible] = useState(false);
+  const [profileDropdownVisible, setProfileDropdownVisible] = useState(false);
   const [chat, setChat] = useState(null);
   const [isLiked, setIsLiked] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [showInitialMessage, setShowInitialMessage] = useState(true);
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [confirmDeleteVisible, setConfirmDeleteVisible] = useState(false);
+  const [deleteItemId, setDeleteItemId] = useState(null);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
+    const fetchUserProfile = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+
+      try {
+        const response = await axios.get("http://localhost:5001/profile", {
+          headers: { Authorization: token },
+        });
+        setUsername(response.data.username);
+        setEmail(response.data.email);
+      } catch (error) {
+        console.error("Error fetching user profile:", error);
+        navigate("/login");
+      }
+    };
+
+    const fetchUserHistory = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+
+      try {
+        const response = await axios.get("http://localhost:5001/history", {
+          headers: { Authorization: token },
+        });
+        setHistory(response.data);
+      } catch (error) {
+        console.error("Error fetching user history:", error);
+        navigate("/login");
+      }
+    };
+
     const initializeChat = async () => {
       const genAI = new GoogleGenerativeAI(API_KEY);
       const model = await genAI.getGenerativeModel({
@@ -54,8 +100,10 @@ function Standard() {
       setChat(newChat);
     };
 
+    fetchUserProfile();
+    fetchUserHistory();
     initializeChat();
-  }, []);
+  }, [navigate]);
 
   const handleSubmit = async (e, question) => {
     if (e) e.preventDefault();
@@ -79,17 +127,59 @@ function Standard() {
         setOutput(md.render(buffer.join("")));
       }
 
+      const now = new Date().toISOString();
+
       const historyItem = {
         id: history.length,
         prompt: value,
         output: buffer.join(""),
+        created_at: now,
       };
-
       setHistory([...history, historyItem]);
+
+      // Save history to backend
+      const token = localStorage.getItem("token");
+      await axios.post("http://localhost:5001/history", { history: JSON.stringify(historyItem) }, { headers: { Authorization: token } });
     } catch (e) {
       setOutput(`Error: ${e.message}`);
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const groupByDate = (historyItems) => {
+    return historyItems.reduce((groups, item) => {
+      const date = new Date(item.created_at).toLocaleDateString("id-ID", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+      if (!groups[date]) {
+        groups[date] = [];
+      }
+      groups[date].push(item);
+      return groups;
+    }, {});
+  };
+
+  const groupedHistory = groupByDate(history);
+
+  const confirmDeleteHistory = (id) => {
+    setDeleteItemId(id);
+    setConfirmDeleteVisible(true);
+  };
+
+  const handleDeleteHistory = async () => {
+    const token = localStorage.getItem("token");
+    try {
+      await axios.delete(`http://localhost:5001/history/${deleteItemId}`, {
+        headers: { Authorization: token },
+      });
+      setHistory(history.filter((item) => item.id !== deleteItemId));
+      setConfirmDeleteVisible(false);
+      setDeleteItemId(null);
+    } catch (error) {
+      console.error("Error deleting history:", error);
     }
   };
 
@@ -102,6 +192,7 @@ function Standard() {
 
   const handleHistoryClick = (item) => {
     setOutput(item.output);
+    setShowInitialMessage(false);
     setHistoryVisible(false);
   };
 
@@ -127,6 +218,30 @@ function Standard() {
     setIsLiked(!isLiked);
   };
 
+  const handleProfileClick = () => {
+    setProfileDropdownVisible(!profileDropdownVisible);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/login");
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
+
+    if (date.toDateString() === today.toDateString()) {
+      return "Hari ini";
+    } else if (date.toDateString() === yesterday.toDateString()) {
+      return "Kemarin";
+    } else {
+      return date.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
+    }
+  };
+
   const Menu1 = [
     {
       name: "Versi Standard",
@@ -150,16 +265,23 @@ function Standard() {
           ❌
         </div>
         <h2 className="history-title text-center">History</h2>
-        <ul className="history-list">
-          {history.map((item) => (
-            <li key={item.id} className="history-item" onClick={() => handleHistoryClick(item)}>
-              {item.prompt}
-            </li>
-          ))}
-        </ul>
+
+        {Object.keys(groupedHistory).map((date) => (
+          <div key={date} className="date-group">
+            <h2 className="ml-4 font-bold mt-6">{formatDate(date)}</h2>
+            <ul className="history-list">
+              {groupedHistory[date].map((item) => (
+                <li key={item.id} className="history-item" onClick={() => handleHistoryClick(item)}>
+                  <span>{item.prompt}</span>
+                  <FaTrash className="delete-icon" onClick={() => confirmDeleteHistory(item.id)} />
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
       </div>
       <div className="chat-container">
-        <div className="header">
+        <div className="header flex justify-between items-center">
           <div className="title-container -translate-y-8 lg:translate-y-0 mx-auto lg:mx-0 md:mx-0" onClick={toggleDropdown}>
             <h1 className="title">SHD.AI</h1>
             <span className="dropdown-icon">▼</span>
@@ -175,6 +297,20 @@ function Standard() {
               ))}
             </ul>
           )}
+          <div className="profile-container relative lg:-mt-10 -mt-16 md:-mt-10">
+            <FaUser className="text-xl cursor-pointer" onClick={handleProfileClick} />
+            {profileDropdownVisible && (
+              <div className="profile-dropdown absolute right-0 mt-2 w-max">
+                <div className="p-4">
+                  <p>Email: {email}</p>
+                  <p>Username: {username}</p>
+                </div>
+                <button onClick={handleLogout} className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-100">
+                  Logout
+                </button>
+              </div>
+            )}
+          </div>
         </div>
         <div className="output-container -mt-10 lg:mt-0 border border-white lg:border-gray-200 md:border-gray-200 dark:border-none dark:lg:border-gray-200 dark:md:border-gray-200">
           {showInitialMessage && (
@@ -221,6 +357,23 @@ function Standard() {
             </button>
           </div>
         </form>
+
+        {confirmDeleteVisible && (
+          <div className="modal-overlay">
+            <div className="modal-content">
+              <h3>Konfirmasi Hapus</h3>
+              <p>Apakah Anda yakin ingin menghapus item ini?</p>
+              <div className="modal-buttons">
+                <button onClick={handleDeleteHistory} className="confirm-button">
+                  Ya
+                </button>
+                <button onClick={() => setConfirmDeleteVisible(false)} className="cancel-button">
+                  Tidak
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -3,6 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "proxy": "http://localhost:5001",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -15,8 +16,11 @@
     "markdown-it": "^14.1.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-google-login": "^5.2.2",
     "react-icons": "^5.2.1",
-    "react-router-dom": "^6.25.1"
+    "react-modal": "^3.16.1",
+    "react-router-dom": "^6.25.1",
+    "react-toastify": "^10.0.5"
   },
   "devDependencies": {
     "@types/react": "^18.3.3",
